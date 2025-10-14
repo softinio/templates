@@ -1,0 +1,26 @@
+[devshell]
+name = "myproject"
+
+[[commands]]
+package = "uv"
+category = "package management"
+
+[[commands]]
+name = "runTests"
+help = "Run test suite"
+command = "uv run pytest"
+
+[[commands]]
+name = "runLint"
+help = "Run linter"
+command = "uv run ruff check src"
+
+[[commands]]
+name = "runFormat"
+help = "Format code"
+command = "uv run ruff format src"
+
+[[commands]]
+name = "runTypeCheck"
+help = "Run type checker"
+command = "uv run pyright"
