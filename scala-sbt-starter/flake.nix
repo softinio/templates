@@ -57,8 +57,6 @@
             echo "Scala: $(scala -version 2>&1 | head -1)"
             echo ""
             echo "Using Scala 3. For Scala 2.13, use: nix develop .#scala2"
-            echo ""
-            menu
           '';
         };
 
@@ -86,8 +84,6 @@
             echo "Scala: $(scala -version 2>&1 | head -1)"
             echo ""
             echo "Using Scala 2.13. For Scala 3, use: nix develop .#scala3"
-            echo ""
-            menu
           '';
         };
 
