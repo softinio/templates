@@ -24,6 +24,25 @@ nix flake init --template github:softinio/templates#python-ai-starter
 
 [See full documentation →](./python-ai-starter/README.md)
 
+### scala-sbt-starter
+
+Scala project template with sbt, scala-cli, and Metals LSP pre-configured.
+
+**Features:**
+- Scala 3 (default) or Scala 2.13
+- Build tools: sbt, scala-cli, coursier
+- Code formatting with scalafmt
+- Metals LSP via sbt's built-in BSP server
+- Project scaffolding commands (newScala3, newTypelevel, newScala2)
+- Reproducible Nix development environment
+
+**Quick start:**
+```bash
+nix flake init --template github:softinio/templates#scala-sbt-starter
+```
+
+[See full documentation →](./scala-sbt-starter/README.md)
+
 ## Usage
 
 ### Initialize in Current Directory
@@ -51,6 +70,30 @@ Each template includes:
 - `README.md` - Comprehensive documentation and usage guide
 - Project-specific configuration files
 - Sample code and tests to get started quickly
+
+## Local Development
+
+After cloning the repository, you can test templates locally before pushing:
+
+```bash
+# Test template initialization
+cd /tmp
+nix flake init --template /path/to/templates#<template-name>
+
+# Or use the repo directory directly
+nix flake init --template ~/Projects/templates#scala-sbt-starter
+
+# Enter the dev environment
+nix develop
+
+# Test template-specific commands
+```
+
+Validate flake syntax from the templates directory:
+
+```bash
+nix flake check
+```
 
 ## Contributing
 
