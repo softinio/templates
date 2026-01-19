@@ -25,6 +25,8 @@ Each template directory must contain:
 
 **python-ai-starter**: Python 3.13 template with uv package manager, pre-configured AI SDKs (Anthropic, OpenAI, Hugging Face, MCP), and development tools (ruff, pyright, pytest). Uses pydantic-settings for configuration management and structlog for logging.
 
+**scala-sbt-starter**: Scala template with sbt, scala-cli, and scalafmt. Supports both Scala 3 (default) and Scala 2.13 via separate dev shells. Includes Metals LSP support via sbt's built-in BSP server. Provides `newScala3`, `newTypelevel`, and `newScala2` commands to scaffold projects.
+
 ## Adding New Templates
 
 When creating a new template:
