@@ -45,17 +45,23 @@ category = "repl"
 [[commands]]
 name = "newScala3"
 help = "Create new Scala 3 project in current directory"
-command = "sbt new devinsideyou/scala3-seed.g8 -o ."
+command = "sbt new scala/scala3.g8 -o ."
+category = "init"
+
+[[commands]]
+name = "newScala3And2"
+help = "Create new Scala 3 and 2 cross compiled project in current directory"
+command = "sbt new scala/scala3-cross.g8 -o ."
+category = "init"
+
+[[commands]]
+name = "newScala2"
+help = "Create new Scala 2.13 project in current directory"
+command = "sed -i.bak 's/default = scala3Shell;/default = scala2Shell;/' flake.nix && rm flake.nix.bak && sbt new scala/scala-seed.g8 -o ."
 category = "init"
 
 [[commands]]
 name = "newTypelevel"
 help = "Create new Typelevel project in current directory"
 command = "sbt new typelevel/typelevel.g8 -o ."
-category = "init"
-
-[[commands]]
-name = "newScala2"
-help = "Create new Scala 2.13 project in current directory"
-command = "sbt new devinsideyou/scala-seed.g8 -o ."
 category = "init"
