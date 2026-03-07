@@ -1,0 +1,135 @@
+//| mvnDeps:
+//|   - com.goyeau::mill-git::0.3.2
+
+import mill.*
+import mill.scalalib.*
+import mill.scalalib.publish.*
+import com.goyeau.mill.git.GitVersionedPublishModule
+
+val munitV            = "1.2.2"
+val catsEffectVersion = "3.6.3"
+val fs2Version        = "3.11.0"
+val munitCEVersion    = "2.1.0"
+val scalaVersions     = Seq("3.3.6", "3.8.2")
+
+object mylibrary extends Cross[MyLibraryModule](scalaVersions)
+
+trait MyLibraryModule
+    extends ScalaModule
+    with CrossScalaModule
+    with GitVersionedPublishModule:
+  def artifactName = "mylibrary"
+
+  override def artifactScalaVersion: T[String] = Task {
+    val v = crossScalaVersion
+    if v.startsWith("3.") then "3"
+    else v.split('.').take(2).mkString(".")
+  }
+
+  // TODO: Add your library's mvnDeps here
+  def mvnDeps = Seq.empty
+
+  def javacOptions = Seq("-source", "17", "-target", "17")
+
+  def scalacOptions =
+    val common = Seq("-explain", "-explain-types", "-release", "17")
+    if crossScalaVersion.startsWith("3.8") then
+      common :+ "-Xkind-projector:underscores"
+    else common
+
+  def scalaDocOptions = Task {
+    val version = Task.env.get("MYLIBRARY_DOC_VERSION").getOrElse(publishVersion())
+    super.scalaDocOptions() ++ Seq(
+      "-project",
+      "MyLibrary",
+      "-project-version",
+      version,
+      "-social-links:github::https://github.com/myorg/mylibrary",
+      "-groups",
+      "-snippet-compiler:compile",
+      "-external-mappings:" +
+        ".*scala.*::scaladoc3::https://scala-lang.org/api/3.x/," +
+        ".*java.*::javadoc::https://docs.oracle.com/en/java/javase/17/docs/api/"
+    )
+  }
+
+  def pomSettings = PomSettings(
+    description = "A Scala 3 library",
+    organization = "com.example",
+    url = "https://github.com/myorg/mylibrary",
+    licenses = Seq(License.`Apache-2.0`),
+    versionControl = VersionControl.github("myorg", "mylibrary"),
+    developers = Seq(
+      Developer(
+        "myorg",
+        "My Name",
+        "https://example.com"
+      )
+    )
+  )
+
+  object test extends ScalaTests with TestModule.Munit:
+    def mvnDeps = Seq(
+      mvn"org.scalameta::munit::$munitV"
+    )
+
+object `mylibrary-cats-effect` extends Cross[MyLibraryCatsEffectModule](scalaVersions)
+
+trait MyLibraryCatsEffectModule
+    extends ScalaModule
+    with CrossScalaModule
+    with GitVersionedPublishModule:
+  def artifactName = "mylibrary-cats-effect"
+
+  def moduleDeps = Seq(mylibrary(crossScalaVersion))
+
+  override def artifactScalaVersion: T[String] = Task {
+    val v = crossScalaVersion
+    if v.startsWith("3.") then "3"
+    else v.split('.').take(2).mkString(".")
+  }
+
+  def mvnDeps = Seq(
+    mvn"org.typelevel::cats-effect:$catsEffectVersion",
+    mvn"co.fs2::fs2-core:$fs2Version"
+  )
+
+  def javacOptions = Seq("-source", "17", "-target", "17")
+
+  def scalacOptions =
+    val common = Seq("-explain", "-explain-types", "-release", "17")
+    if crossScalaVersion.startsWith("3.8") then
+      common :+ "-Xkind-projector:underscores"
+    else common
+
+  def scalaDocOptions = Task {
+    val version = Task.env.get("MYLIBRARY_DOC_VERSION").getOrElse(publishVersion())
+    super.scalaDocOptions() ++ Seq(
+      "-project",
+      "MyLibrary Cats Effect",
+      "-project-version",
+      version,
+      "-social-links:github::https://github.com/myorg/mylibrary",
+      "-groups",
+      "-external-mappings:" +
+        ".*scala.*::scaladoc3::https://scala-lang.org/api/3.x/," +
+        ".*java.*::javadoc::https://docs.oracle.com/en/java/javase/17/docs/api/"
+    )
+  }
+
+  def pomSettings = PomSettings(
+    description = "A Scala 3 library",
+    organization = "com.example",
+    url = "https://github.com/myorg/mylibrary",
+    licenses = Seq(License.`Apache-2.0`),
+    versionControl = VersionControl.github("myorg", "mylibrary"),
+    developers = Seq(
+      Developer("myorg", "My Name", "https://example.com")
+    )
+  )
+
+  object test extends ScalaTests with TestModule.Munit:
+    def mvnDeps = Seq(
+      mvn"org.scalameta::munit::$munitV",
+      mvn"org.typelevel::munit-cats-effect::$munitCEVersion"
+    )
