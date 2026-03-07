@@ -1,0 +1,8 @@
+/.vscode/
+.bsp
+.scala-build
+/.idea/
+/.metals/
+/out/
+mill.*
+.mcp.json

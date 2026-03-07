@@ -1,0 +1,21 @@
+# https://numtide.github.io/devshell
+# https://numtide.github.io/devshell/getting_started.html
+[[commands]]
+package = "mill"
+
+[[commands]]
+name = "fmt"
+command = "mill mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources"
+help = "Format all source files with Scalafmt"
+
+[[commands]]
+name = "fmtCheck"
+command = "mill mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources"
+help = "Check formatting of all source files with Scalafmt"
+
+[devshell]
+packages = [
+  "coursier",
+  "jdk17",
+  "scala-cli"
+]

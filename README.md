@@ -43,6 +43,29 @@ nix flake init --template github:softinio/templates#scala-sbt-starter
 
 [See full documentation →](./scala-sbt-starter/README.md)
 
+### scala-mill-library-starter
+
+Scala library template using Mill build tool, designed for publishing to Maven Central.
+
+**Features:**
+- Cross-Scala 3 build: 3.3.6 LTS + 3.8.2 latest
+- Dual-module structure: core library + cats-effect integration
+- Automatic git-tag-based versioning via mill-git
+- Maven Central publishing via Sonatype
+- Code formatting with scalafmt
+- GitHub Actions CI and release workflows
+- Interactive setup script and `/project:setup` Claude Code skill
+- Reproducible Nix development environment
+
+**Quick start:**
+```bash
+mkdir mylibrary && cd mylibrary
+nix flake init --template github:softinio/templates#scala-mill-library-starter
+bash setup.sh
+```
+
+[See full documentation →](./scala-mill-library-starter/README.md)
+
 ## Usage
 
 ### Initialize in Current Directory

@@ -12,6 +12,11 @@
         path = ./scala-sbt-starter;
         description = "Scala project template with sbt, scala-cli, and scalafmt (supports Scala 2.13 and Scala 3)";
       };
+
+      scala-mill-library-starter = {
+        path = ./scala-mill-library-starter;
+        description = "Scala library template with Mill, cross-Scala 3 (LTS + latest), cats-effect module, and Maven Central publishing";
+      };
     };
   };
 }
