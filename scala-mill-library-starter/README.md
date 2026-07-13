@@ -42,7 +42,7 @@ Both methods will prompt you for your library name, Maven organization, GitHub h
 ## Prerequisites
 
 - [Nix](https://nixos.org/download) with flakes enabled
-- Java 21 or later (provided by the devshell)
+- JDK 25 (provided by the devshell); published artifacts target Java 21 bytecode for wider compatibility
 
 ## Development
 

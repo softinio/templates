@@ -26,6 +26,6 @@ help = "Build and serve the documentation site at http://localhost:4242"
 [devshell]
 packages = [
   "coursier",
-  "jdk21",
+  "jdk25",
   "scala-cli"
 ]
