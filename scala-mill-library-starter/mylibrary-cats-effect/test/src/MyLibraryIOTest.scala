@@ -5,5 +5,7 @@ import munit.CatsEffectSuite
 
 class MyLibraryIOTest extends CatsEffectSuite:
   test("greet"):
-    MyLibraryIO.greet("world").map: result =>
-      assertEquals(result, "Hello, world!")
+    MyLibraryIO
+      .greet("world")
+      .map: result =>
+        assertEquals(result, "Hello, world!")

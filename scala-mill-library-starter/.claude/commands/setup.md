@@ -41,6 +41,9 @@ After collecting the values, make the following substitutions across **all** fil
 - `mylibrary/test/src/MyLibraryTest.scala`
 - `mylibrary-cats-effect/src/MyLibraryIO.scala`
 - `mylibrary-cats-effect/test/src/MyLibraryIOTest.scala`
+- `docs/index.md`
+- `scripts/LaikaBuild.scala`
+- `scripts/LaikaPreview.scala`
 
 ## Directory Renames
 

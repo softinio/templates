@@ -15,7 +15,7 @@
 
       scala-mill-library-starter = {
         path = ./scala-mill-library-starter;
-        description = "Scala library template with Mill, cross-Scala 3 (LTS + latest), cats-effect module, and Maven Central publishing";
+        description = "Typelevel-stack Scala library template with Mill, cross-Scala 3 (LTS + latest), cats/cats-effect/FS2, Laika documentation site, and Maven Central publishing";
       };
     };
   };
