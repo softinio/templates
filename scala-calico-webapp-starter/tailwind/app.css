@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@source "../backend/src";
+@source "../frontend/src";
+@source "../shared/src";
+
+@theme {
+  /* brand color — change me */
+  --color-brand: #0e7490;
+  --color-brand-dark: #155e75;
+
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, monospace;
+}

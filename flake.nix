@@ -17,6 +17,11 @@
         path = ./scala-mill-library-starter;
         description = "Scala library template with Mill, cross-Scala 3 (LTS + latest), cats-effect module, and Maven Central publishing";
       };
+
+      scala-calico-webapp-starter = {
+        path = ./scala-calico-webapp-starter;
+        description = "Full-stack Scala 3 Typelevel webapp template: http4s SSR + Calico (Scala.js) islands, skunk/PostgreSQL, Tailwind, Mill, devshell with postgres, NixOS module";
+      };
     };
   };
 }

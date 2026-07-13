@@ -1,0 +1,130 @@
+# https://numtide.github.io/devshell
+# https://numtide.github.io/devshell/getting_started.html
+
+[devshell]
+name = "mywebapp"
+packages = [
+  "mill",
+  "nodejs_22",
+  "tailwindcss_4",
+  "postgresql",
+  "metals",
+  "scalafmt",
+]
+
+[[commands]]
+name = "runTests"
+category = "development"
+help = "Run all tests (JVM + JS)"
+command = "mill __.test"
+
+[[commands]]
+name = "runLint"
+category = "development"
+help = "Format code and apply scalafix rewrites"
+command = "mill __.reformat && mill __.fix"
+
+[[commands]]
+name = "checkCI"
+category = "development"
+help = "Run the same checks CI runs (fatal warnings on)"
+command = """\
+  CI=true mill __.compile && mill __.checkFormat && mill __.fix --check && mill __.test
+"""
+
+[[commands]]
+name = "buildJar"
+category = "development"
+help = "Build the self-contained fat jar"
+command = "mill backend.assembly && echo 'jar: out/backend/assembly.dest/out.jar'"
+
+[[commands]]
+name = "watchFrontend"
+category = "development"
+help = "Relink the Scala.js islands on every change (pair with MYWEBAPP_DEV_ASSETS)"
+command = "mill -w frontend.fastLinkJS"
+
+[[commands]]
+name = "startPostgres"
+category = "database"
+help = "Start PostgreSQL server for local development"
+command = """\
+  mkdir -p /tmp/postgres-mywebapp && \
+  [ -d /tmp/postgres-mywebapp/data ] || (initdb -D /tmp/postgres-mywebapp/data && \
+  echo "host all all 127.0.0.1/32 trust" >> /tmp/postgres-mywebapp/data/pg_hba.conf && \
+  echo "host all all ::1/128 trust" >> /tmp/postgres-mywebapp/data/pg_hba.conf) && \
+  pg_ctl -D /tmp/postgres-mywebapp/data -l /tmp/postgres-mywebapp.log start -o "-k /tmp/postgres-mywebapp" && \
+  sleep 1 && \
+  (psql -h localhost -d postgres -tc "SELECT 1 FROM pg_roles WHERE rolname='mywebapp'" | grep -q 1 || \
+   psql -h localhost -d postgres -c "CREATE USER mywebapp WITH SUPERUSER;") && \
+  (psql -h localhost -d postgres -tc "SELECT 1 FROM pg_database WHERE datname='mywebapp'" | grep -q 1 || \
+   psql -h localhost -d postgres -c "CREATE DATABASE mywebapp OWNER mywebapp;")
+"""
+
+[[commands]]
+name = "stopPostgres"
+category = "database"
+help = "Stop PostgreSQL server"
+command = """\
+  pg_ctl -D /tmp/postgres-mywebapp/data stop
+"""
+
+[[commands]]
+name = "postgresStatus"
+category = "database"
+help = "Check PostgreSQL connection status"
+command = """\
+  pg_isready -h localhost || echo "PostgreSQL is not running"
+"""
+
+[[commands]]
+name = "resetDB"
+category = "database"
+help = "Drop and recreate the database (WARNING: destructive)"
+command = """\
+  psql -h localhost -d postgres -c "DROP DATABASE IF EXISTS mywebapp;" && \
+  psql -h localhost -d postgres -c "CREATE DATABASE mywebapp OWNER mywebapp;" && \
+  echo "Database reset; migrations run on next server start."
+"""
+
+[[commands]]
+name = "runDev"
+category = "development"
+help = "Start PostgreSQL and run the development server"
+command = """\
+  # Set up cleanup trap for Ctrl-C
+  cleanup() {
+    echo ""
+    echo "Shutting down services..."
+    pg_ctl -D /tmp/postgres-mywebapp/data stop 2>/dev/null || true
+    echo "Services stopped."
+    exit 0
+  }
+  trap cleanup INT TERM
+
+  echo "Starting PostgreSQL..." && \
+  mkdir -p /tmp/postgres-mywebapp && \
+  [ -d /tmp/postgres-mywebapp/data ] || (initdb -D /tmp/postgres-mywebapp/data && \
+  echo "host all all 127.0.0.1/32 trust" >> /tmp/postgres-mywebapp/data/pg_hba.conf && \
+  echo "host all all ::1/128 trust" >> /tmp/postgres-mywebapp/data/pg_hba.conf) && \
+  pg_ctl -D /tmp/postgres-mywebapp/data -l /tmp/postgres-mywebapp.log start -o "-k /tmp/postgres-mywebapp" && \
+  sleep 1 && \
+  (psql -h localhost -d postgres -tc "SELECT 1 FROM pg_roles WHERE rolname='mywebapp'" | grep -q 1 || \
+   psql -h localhost -d postgres -c "CREATE USER mywebapp WITH SUPERUSER;") && \
+  (psql -h localhost -d postgres -tc "SELECT 1 FROM pg_database WHERE datname='mywebapp'" | grep -q 1 || \
+   psql -h localhost -d postgres -c "CREATE DATABASE mywebapp OWNER mywebapp;") && \
+  pg_isready -h localhost && \
+  echo "PostgreSQL started successfully" && \
+  echo "" && \
+  echo "Server: http://localhost:8080" && \
+  echo "Press Ctrl-C to stop all services" && \
+  MYWEBAPP_DB_HOST=localhost \
+  MYWEBAPP_DB_PORT=5432 \
+  MYWEBAPP_DB_USER=mywebapp \
+  MYWEBAPP_DB_NAME=mywebapp \
+  MYWEBAPP_BASE_URL=http://localhost:8080 \
+  mill backend.run
+
+  # Cleanup on normal exit
+  cleanup
+"""
