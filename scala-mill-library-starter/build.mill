@@ -33,10 +33,10 @@ trait MyLibraryModule
     mvn"org.typelevel::cats-core:$catsVersion"
   )
 
-  def javacOptions = Seq("-source", "21", "-target", "21")
+  def javacOptions = Seq("-source", "25", "-target", "25")
 
   def scalacOptions =
-    val common = Seq("-explain", "-explain-types", "-release", "21")
+    val common = Seq("-explain", "-explain-types", "-release", "25")
     if crossScalaVersion.startsWith("3.8") then
       common :+ "-Xkind-projector:underscores"
     else common
@@ -53,7 +53,7 @@ trait MyLibraryModule
       "-snippet-compiler:compile",
       "-external-mappings:" +
         ".*scala.*::scaladoc3::https://scala-lang.org/api/3.x/," +
-        ".*java.*::javadoc::https://docs.oracle.com/en/java/javase/21/docs/api/"
+        ".*java.*::javadoc::https://docs.oracle.com/en/java/javase/25/docs/api/"
     )
   }
 
@@ -98,10 +98,10 @@ trait MyLibraryCatsEffectModule
     mvn"co.fs2::fs2-core:$fs2Version"
   )
 
-  def javacOptions = Seq("-source", "21", "-target", "21")
+  def javacOptions = Seq("-source", "25", "-target", "25")
 
   def scalacOptions =
-    val common = Seq("-explain", "-explain-types", "-release", "21")
+    val common = Seq("-explain", "-explain-types", "-release", "25")
     if crossScalaVersion.startsWith("3.8") then
       common :+ "-Xkind-projector:underscores"
     else common
@@ -117,7 +117,7 @@ trait MyLibraryCatsEffectModule
       "-groups",
       "-external-mappings:" +
         ".*scala.*::scaladoc3::https://scala-lang.org/api/3.x/," +
-        ".*java.*::javadoc::https://docs.oracle.com/en/java/javase/21/docs/api/"
+        ".*java.*::javadoc::https://docs.oracle.com/en/java/javase/25/docs/api/"
     )
   }
 
