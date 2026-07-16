@@ -2,10 +2,12 @@
 
 A Nix flake template for bootstrapping Scala library projects using the [Mill](https://mill-build.org) build tool. Includes:
 
-- Cross-Scala 3 build (3.3.6 LTS + 3.8.2 latest)
-- Dual-module structure: core library + cats-effect integration
+- Cross-Scala 3 build (3.3.8 LTS + 3.8.4 latest)
+- Dual-module structure: core library (cats) + cats-effect/FS2 integration
 - Git-tag-based automatic versioning via [mill-git](https://github.com/jodersky/mill-git)
 - Maven Central publishing via Sonatype
+- Laika documentation site (Helium theme) with build/preview commands and
+  automatic publishing to GitHub Pages
 - Scalafmt formatting
 - GitHub Actions CI and release workflows
 - Nix devshell with all required tools
@@ -40,7 +42,7 @@ Both methods will prompt you for your library name, Maven organization, GitHub h
 ## Prerequisites
 
 - [Nix](https://nixos.org/download) with flakes enabled
-- Java 17 or later (provided by the devshell)
+- JDK 25 (provided by the devshell); published artifacts target Java 25 bytecode
 
 ## Development
 
@@ -56,11 +58,13 @@ nix develop
 |---|---|
 | `mill __.compile` | Compile all modules |
 | `mill __.test` | Run all tests |
-| `mill "mylibrary[3.8.2].test"` | Test core module with Scala 3.8.2 |
-| `mill "mylibrary-cats-effect[3.3.6].test"` | Test cats-effect module with Scala 3.3.6 |
+| `mill "mylibrary[3.8.4].test"` | Test core module with Scala 3.8.4 |
+| `mill "mylibrary-cats-effect[3.3.8].test"` | Test cats-effect module with Scala 3.3.8 |
 | `fmt` | Format all sources with Scalafmt |
 | `fmtCheck` | Check formatting without modifying |
-| `mill "mylibrary[3.8.2].docJar"` | Generate Scaladoc |
+| `mill "mylibrary[3.8.4].docJar"` | Generate Scaladoc |
+| `mill docs.build` (or `buildDocs`) | Build the Laika documentation site |
+| `mill docs.preview` (or `previewDocs`) | Serve the docs at http://localhost:4242 |
 | `mill __.publishLocal` | Publish to local Ivy repository |
 
 ## Project Structure
@@ -82,17 +86,38 @@ nix develop
 │   │   └── MyLibraryIO.scala
 │   └── test/src/
 │       └── MyLibraryIOTest.scala
+├── docs/                             # Laika documentation sources (Markdown)
+│   └── index.md
+├── scripts/                          # scala-cli scripts running Laika
+│   ├── LaikaBuild.scala
+│   └── LaikaPreview.scala
 └── .github/workflows/
-    ├── ci.yml                        # CI: test + format check
+    ├── ci.yml                        # CI: test + format check + docs site
     └── release.yml                   # Release: publish to Maven Central
 ```
 
 The template uses two Mill cross modules:
 
-- **`mylibrary`** — core library, cross-built for Scala 3.3.6 and 3.8.2
+- **`mylibrary`** — core library (depends on cats-core), cross-built for Scala 3.3.8 and 3.8.4
 - **`mylibrary-cats-effect`** — cats-effect + FS2 integration, depends on the core module
 
 Both modules extend `GitVersionedPublishModule`, so the version is automatically derived from git tags (e.g. tagging `v0.1.0` publishes version `0.1.0`).
+
+## Documentation Site
+
+The `docs/` directory holds the Markdown sources for a documentation site
+rendered by [Laika](https://typelevel.org/Laika/) with the Helium theme.
+
+| Command | Description |
+|---|---|
+| `mill docs.build` | Build the site into `site/target/docs/site` |
+| `mill docs.preview` | Build and serve the site at http://localhost:4242 |
+
+Inside the devshell the `buildDocs` and `previewDocs` aliases wrap these
+commands. Both shell out to `scala-cli` (provided by the devshell) to run the
+scripts in `scripts/`; customize the Helium theme (title, nav links, footer)
+there. The CI workflow builds the site on every push and publishes it to the
+`gh-pages` branch (GitHub Pages) on pushes to `main`.
 
 ## Publishing to Maven Central
 

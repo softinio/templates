@@ -13,9 +13,19 @@ name = "fmtCheck"
 command = "mill mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources"
 help = "Check formatting of all source files with Scalafmt"
 
+[[commands]]
+name = "buildDocs"
+command = "mill docs.build"
+help = "Build the Laika documentation site into site/target/docs/site"
+
+[[commands]]
+name = "previewDocs"
+command = "mill docs.preview"
+help = "Build and serve the documentation site at http://localhost:4242"
+
 [devshell]
 packages = [
   "coursier",
-  "jdk17",
+  "jdk25",
   "scala-cli"
 ]
