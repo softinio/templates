@@ -1,0 +1,55 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches: ['**']
+  push:
+    branches: ['**']
+    tags: [v*]
+
+concurrency:
+  group: ${{ github.workflow }} @ ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Cache Mill and Coursier
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/mill
+            ~/.cache/coursier
+          key: ${{ runner.os }}-mill-${{ hashFiles('build.mill', '.mill-version') }}
+          restore-keys: |
+            ${{ runner.os }}-mill-
+
+      - name: Install Tailwind CSS CLI
+        run: npm ci
+
+      - name: Compile
+        run: ./mill --no-server __.compile
+
+      - name: Check formatting
+        run: ./mill --no-server __.checkFormat
+
+      - name: Check scalafix lints
+        run: ./mill --no-server __.fix --check
+
+      - name: Test
+        run: ./mill --no-server __.test
+
+      - name: Build assembly
+        run: ./mill --no-server backend.assembly
