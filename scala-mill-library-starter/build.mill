@@ -33,7 +33,7 @@ trait MyLibraryModule
     mvn"org.typelevel::cats-core:$catsVersion"
   )
 
-  def javacOptions = Seq("-source", "21", "-target", "21")
+  def javacOptions = Seq("--release", "21")
 
   def scalacOptions =
     // 21 is the highest `-release` the 3.3 LTS compiler accepts, and the LTS is
@@ -112,7 +112,7 @@ trait MyLibraryCatsEffectModule
     mvn"co.fs2::fs2-core:$fs2Version"
   )
 
-  def javacOptions = Seq("-source", "21", "-target", "21")
+  def javacOptions = Seq("--release", "21")
 
   def scalacOptions =
     // 21 is the highest `-release` the 3.3 LTS compiler accepts, and the LTS is
