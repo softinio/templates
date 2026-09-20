@@ -17,39 +17,65 @@ Ask the user for the following values one by one (or all at once if they prefer)
 
 After collecting the values, make the following substitutions across **all** files in this project:
 
+Apply these **in order** — the earlier, more specific rules must win over the
+later, broader ones.
+
 | Placeholder | Replace with |
 |---|---|
-| `mylibrary-cats-effect` | `<library-name>-cats-effect` |
-| `mylibrary` | `<library-name>` |
-| `MyLibrary` | `<LibraryName>` (title-cased) |
+| `com.example.mylibrary` | `<organization>.<pkg-name>` |
 | `com.example` | `<organization>` |
+| `mylibrary-cats-effect` | `<library-name>-cats-effect` |
+| `object mylibrary ` | `object <module-ident> ` |
+| `Seq(mylibrary(` | `Seq(<module-ident>(` |
+| `MYLIBRARY_DOC_VERSION` | `<UPPER_NAME>_DOC_VERSION` |
+| `mylibrary` | `<library-name>` |
+| `MyLibrary` | `<PascalName>` |
 | `myorg` | `<github-org>` |
 | `My Name` | `<developer-name>` |
 | `https://example.com` | `<developer-url>` |
 | `A Scala 3 library` | `<description>` |
-| `MYLIBRARY_DOC_VERSION` | `<LIBRARY_NAME_UPPER>_DOC_VERSION` |
+
+Derive the name variants from the library name, which is lower-case words
+separated by `-` (e.g. `cool-lib`):
+
+- `<pkg-name>` — a valid Scala package segment: hyphens **removed** (`coollib`).
+  `com.example.cool-lib` would not compile.
+- `<PascalName>` — each `-`-separated word capitalized, hyphens removed
+  (`CoolLib`). Do **not** just upper-case the first letter — `Cool-lib` is not a
+  valid Scala identifier.
+- `<UPPER_NAME>` — upper-cased with `-` replaced by `_` (`COOL_LIB`). A `-` is
+  not legal in an environment variable name.
+- `<module-ident>` — the library name, backtick-quoted if it contains a `-`
+  (`` `cool-lib` ``), since Mill object names are Scala identifiers. Used only
+  for the `object` definition and the `moduleDeps` reference in `build.mill`;
+  artifact names, directories and docs keep the plain hyphenated form.
 
 ## Files to Update
 
-- `build.mill`
-- `README.md`
-- `flake.nix`
-- `devshell.toml`
-- `.github/workflows/ci.yml`
-- `.github/workflows/release.yml`
-- `mylibrary/src/MyLibrary.scala`
-- `mylibrary/test/src/MyLibraryTest.scala`
-- `mylibrary-cats-effect/src/MyLibraryIO.scala`
-- `mylibrary-cats-effect/test/src/MyLibraryIOTest.scala`
-- `docs/index.md`
-- `scripts/LaikaBuild.scala`
-- `scripts/LaikaPreview.scala`
+Every text file that still mentions a placeholder. Discover them rather than
+working from a fixed list, so nothing is missed as the template evolves:
 
-## Directory Renames
+```bash
+grep -rIl -e 'mylibrary' -e 'MyLibrary' -e 'MYLIBRARY' -e 'com\.example' \
+  -e 'myorg' -e 'My Name' -e 'example\.com' -e 'A Scala 3 library' . \
+  --exclude-dir=.git --exclude-dir=.jj --exclude-dir=out --exclude=setup.sh
+```
 
-After updating file contents, rename:
+At the time of writing that covers `build.mill`, `README.md`, `flake.nix`,
+`.github/workflows/ci.yml`, `docs/index.md`, `scripts/LaikaBuild.scala`,
+`scripts/LaikaPreview.scala`, and the four module sources.
+
+## Directory and File Renames
+
+After updating file contents, rename the directories:
 - `mylibrary/` → `<library-name>/`
 - `mylibrary-cats-effect/` → `<library-name>-cats-effect/`
+
+and the sources, so the file names match the renamed types:
+- `<library-name>/src/MyLibrary.scala` → `<PascalName>.scala`
+- `<library-name>/test/src/MyLibraryTest.scala` → `<PascalName>Test.scala`
+- `<library-name>-cats-effect/src/MyLibraryIO.scala` → `<PascalName>IO.scala`
+- `<library-name>-cats-effect/test/src/MyLibraryIOTest.scala` → `<PascalName>IOTest.scala`
 
 ## Cleanup
 

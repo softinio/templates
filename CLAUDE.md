@@ -73,6 +73,17 @@ nix develop
 - **Clear documentation**: README should enable users to be productive without external docs
 - **Customization-friendly**: Use placeholder names like `myproject` that are easy to find and replace
 - **Environment agnostic**: Templates should work via Nix flakes without assuming system packages
+- **Portable setup scripts**: A template's `setup.sh` runs on the user's *system*
+  bash before they enter the dev shell. On macOS that is bash 3.2, so avoid
+  bash 4+ features: `${var^^}` / `${var,,}` case conversion, `declare -A`,
+  `mapfile` / `readarray`. Use `tr`, `sed` or `awk` instead.
+- **Escape user input in `sed`**: values typed at a prompt land in `sed`
+  replacement text, where `&` expands to the whole match and the delimiter ends
+  the expression. Escape them (`sed 's/[\\&|]/\\&/g'`) before interpolating.
+- **Derive name variants deliberately**: a single placeholder usually maps to
+  several forms — artifact name (`cool-lib`), Scala package segment (`coollib`),
+  type name (`CoolLib`), env var prefix (`COOL_LIB`). Substituting one form
+  everywhere produces code that does not compile.
 
 ## Common Commands
 
