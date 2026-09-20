@@ -47,9 +47,11 @@ read -rp "Maven organization (e.g. com.softinio): " ORGANIZATION
 read -rp "GitHub org/user (e.g. softinio): " GITHUB_ORG
 read -rp "Developer name (e.g. Jane Doe): " DEV_NAME
 read -rp "Developer URL (e.g. https://softinio.com): " DEV_URL
-# Mill always emits a <developer><email> element, so leaving this blank ships an
-# empty tag in every published POM.
-read -rp "Developer email (e.g. jane@example.com): " DEV_EMAIL
+# Optional. Maven Central does not require it -- Mill emits a
+# <developer><email> element either way, and a blank one publishes fine. Skip it
+# if you would rather not have an address permanently on Central, since a
+# published POM cannot be amended or withdrawn.
+read -rp "Developer email (optional, press Enter to skip): " DEV_EMAIL
 read -rp "Short library description (e.g. A fast Scala library for X): " DESCRIPTION
 echo ""
 echo "License: any SPDX identifier Mill knows, e.g. Apache-2.0, MIT, BSD-3-Clause, MPL-2.0."
@@ -61,7 +63,6 @@ require "Maven organization" "$ORGANIZATION"
 require "GitHub org/user" "$GITHUB_ORG"
 require "Developer name" "$DEV_NAME"
 require "Developer URL" "$DEV_URL"
-require "Developer email" "$DEV_EMAIL"
 require "Short library description" "$DESCRIPTION"
 
 if ! printf '%s' "$LICENSE_ID" | grep -Eq '^[A-Za-z0-9.+-]+$'; then
@@ -180,7 +181,7 @@ echo "  Test JDK env:     ${UPPER_NAME}_JVM"
 echo "  Organization:    ${ORGANIZATION}"
 echo "  GitHub org/user: ${GITHUB_ORG}"
 echo "  Developer:       ${DEV_NAME} (${DEV_URL})"
-echo "  Developer email: ${DEV_EMAIL}"
+echo "  Developer email: ${DEV_EMAIL:-(none)}"
 echo "  Description:     ${DESCRIPTION}"
 echo "  License:         ${LICENSE_ID}"
 echo ""
