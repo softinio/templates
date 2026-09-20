@@ -128,6 +128,7 @@ for f in "${FILES[@]}"; do
     -e "s|object mylibrary |object ${R_MODULE} |g" \
     -e "s|Seq(mylibrary(|Seq(${R_MODULE}(|g" \
     -e "s|MYLIBRARY_DOC_VERSION|${R_UPPER}_DOC_VERSION|g" \
+    -e "s|MYLIBRARY_JVM|${R_UPPER}_JVM|g" \
     -e "s|mylibrary|${R_LIB}|g" \
     -e "s|MyLibrary|${R_PASCAL}|g" \
     -e "s|myorg|${R_GITHUB}|g" \
@@ -175,6 +176,7 @@ echo "  Library name:    ${LIBRARY_NAME}"
 echo "  Scala package:   ${ORGANIZATION}.${PKG_NAME}"
 echo "  Scala types:     ${PASCAL_NAME}"
 echo "  Docs version env: ${UPPER_NAME}_DOC_VERSION"
+echo "  Test JDK env:     ${UPPER_NAME}_JVM"
 echo "  Organization:    ${ORGANIZATION}"
 echo "  GitHub org/user: ${GITHUB_ORG}"
 echo "  Developer:       ${DEV_NAME} (${DEV_URL})"

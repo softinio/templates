@@ -42,8 +42,13 @@ Both methods will prompt you for your library name, Maven organization, GitHub h
 ## Prerequisites
 
 - [Nix](https://nixos.org/download) with flakes enabled
-- JDK 25 (provided by the devshell); published artifacts target Java 21 bytecode,
-  which is the highest `-release` the 3.3 LTS compiler accepts
+- JDK 21 (provided by the devshell); published artifacts target Java 21 bytecode,
+  which is the highest `-release` either Scala 3 compiler accepts. The nixpkgs
+  `mill` wrapper pins JAVA_HOME to its own JDK 21 regardless of what the devshell
+  lists, so 21 is what the build actually runs on. CI additionally runs the test
+  suites on Java 25 via the `MYLIBRARY_JVM` environment variable, since
+  `--release 21` guarantees the API surface exists but not that the code behaves
+  the same on a later JVM
 
 ## Development
 

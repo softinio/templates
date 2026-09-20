@@ -33,6 +33,18 @@ trait MyLibraryModule
     mvn"org.typelevel::cats-core:$catsVersion"
   )
 
+  /** JDK used to compile and run this module.
+    *
+    * Empty means "whatever JDK Mill itself runs on", which in this devshell is
+    * the 21 that the nixpkgs `mill` wrapper pins -- the same version these
+    * artifacts target. CI sets this to exercise newer runtimes, because
+    * `--release 21` guarantees the API surface exists but not that the code
+    * behaves identically on a later JVM.
+    */
+  override def jvmVersion: T[String] = Task.Input {
+    Task.env.getOrElse("MYLIBRARY_JVM", "")
+  }
+
   def javacOptions = Seq("--release", "21")
 
   def scalacOptions =
@@ -111,6 +123,18 @@ trait MyLibraryCatsEffectModule
     mvn"org.typelevel::cats-effect:$catsEffectVersion",
     mvn"co.fs2::fs2-core:$fs2Version"
   )
+
+  /** JDK used to compile and run this module.
+    *
+    * Empty means "whatever JDK Mill itself runs on", which in this devshell is
+    * the 21 that the nixpkgs `mill` wrapper pins -- the same version these
+    * artifacts target. CI sets this to exercise newer runtimes, because
+    * `--release 21` guarantees the API surface exists but not that the code
+    * behaves identically on a later JVM.
+    */
+  override def jvmVersion: T[String] = Task.Input {
+    Task.env.getOrElse("MYLIBRARY_JVM", "")
+  }
 
   def javacOptions = Seq("--release", "21")
 

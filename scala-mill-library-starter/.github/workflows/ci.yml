@@ -58,6 +58,43 @@ jobs:
           out/**/${{ matrix.scala-version }}/test/
         retention-days: 7
 
+  jdk-compat:
+    name: Tests on Java ${{ matrix.jdk }} / Scala ${{ matrix.scala-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        jdk: ["25"]
+        scala-version: ["3.3.8", "3.9.0"]
+    # The `tests` job above already covers Java 21 -- the version these
+    # artifacts target and the one the devshell's Mill runs on. This job checks
+    # the code also behaves on a newer runtime, which `--release 21` does not
+    # guarantee on its own.
+    env:
+      MYLIBRARY_JVM: "temurin:${{ matrix.jdk }}"
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: cachix/install-nix-action@v31
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Cache Mill
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/mill
+          ~/.cache/coursier
+          out/
+        key: ${{ runner.os }}-mill-jdk${{ matrix.jdk }}-${{ matrix.scala-version }}-${{ hashFiles('build.mill') }}
+        restore-keys: |
+          ${{ runner.os }}-mill-jdk${{ matrix.jdk }}-${{ matrix.scala-version }}-
+          ${{ runner.os }}-mill-
+
+    - name: Run tests
+      run: |
+        nix develop --command mill "__[${{ matrix.scala-version }}].test"
+
   site:
     name: Generate Site
     runs-on: ubuntu-latest
