@@ -58,6 +58,22 @@ Enter the Nix devshell:
 nix develop
 ```
 
+### Commit `flake.lock`
+
+The first `nix develop` writes a `flake.lock` pinning nixpkgs. **Commit it.**
+This template deliberately ships without one so that new projects start on a
+current nixpkgs, but until the lock is committed `flake.nix` only tracks
+`nixos-unstable` by ref, so CI resolves it afresh on every run. The JDK, Mill,
+Node and scala-cli versions can then shift between two runs of identical code,
+turning a green build red with no commit in between.
+
+```bash
+git add flake.lock && git commit -m "Pin nixpkgs"
+```
+
+Update deliberately later with `nix flake update`, which moves the whole
+toolchain at once.
+
 ### Common Commands
 
 | Command | Description |

@@ -31,6 +31,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-mill-
 
+    # The JDK is not set here: `nix develop` supplies it (see devshell.toml),
+    # and the nixpkgs `mill` wrapper pins JAVA_HOME to its own JDK regardless.
+    # Print it so the version that actually ran is recorded in the log.
+    - name: Report toolchain
+      run: |
+        nix develop --command bash -c 'java -version; echo "JAVA_HOME=$JAVA_HOME"'
+
     # Run tests for specific Scala version
     - name: Run tests for Scala ${{ matrix.scala-version }}
       run: |
@@ -90,6 +97,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-mill-jdk${{ matrix.jdk }}-${{ matrix.scala-version }}-
           ${{ runner.os }}-mill-
+
+    - name: Report toolchain
+      run: |
+        nix develop --command bash -c 'java -version; echo "JAVA_HOME=$JAVA_HOME"'
+        echo "Mill will resolve and run tests on: $MYLIBRARY_JVM"
 
     - name: Run tests
       run: |
