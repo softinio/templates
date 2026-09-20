@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        scala-version: ["3.3.8", "3.8.4"]
+        scala-version: ["3.3.8", "3.9.0"]
     steps:
     - uses: actions/checkout@v4
 
@@ -31,22 +31,29 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-mill-
 
+    # The JDK is not set here: `nix develop` supplies it (see devshell.toml),
+    # and the nixpkgs `mill` wrapper pins JAVA_HOME to its own JDK regardless.
+    # Print it so the version that actually ran is recorded in the log.
+    - name: Report toolchain
+      run: |
+        nix develop --command bash -c 'java -version; echo "JAVA_HOME=$JAVA_HOME"'
+
     # Run tests for specific Scala version
     - name: Run tests for Scala ${{ matrix.scala-version }}
       run: |
-        nix develop --command mill "mylibrary[${{ matrix.scala-version }}].test"
+        nix develop --command mill "__[${{ matrix.scala-version }}].test"
 
     # Check code formatting
     - name: Check code formatting
-      if: matrix.scala-version == '3.8.4'
+      if: matrix.scala-version == '3.9.0'
       run: |
         nix develop --command mill mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources
 
     # Build documentation
     - name: Generate documentation
-      if: matrix.scala-version == '3.8.4'
+      if: matrix.scala-version == '3.9.0'
       run: |
-        nix develop --command mill "mylibrary[3.8.4].docJar"
+        nix develop --command mill "__[3.9.0].docJar"
 
     # Upload test results
     - name: Upload test results
@@ -55,8 +62,50 @@ jobs:
       with:
         name: test-results-${{ matrix.scala-version }}
         path: |
-          out/mylibrary/${{ matrix.scala-version }}/test/
+          out/**/${{ matrix.scala-version }}/test/
         retention-days: 7
+
+  jdk-compat:
+    name: Tests on Java ${{ matrix.jdk }} / Scala ${{ matrix.scala-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        jdk: ["25"]
+        scala-version: ["3.3.8", "3.9.0"]
+    # The `tests` job above already covers Java 21 -- the version these
+    # artifacts target and the one the devshell's Mill runs on. This job checks
+    # the code also behaves on a newer runtime, which `--release 21` does not
+    # guarantee on its own.
+    env:
+      MYLIBRARY_JVM: "temurin:${{ matrix.jdk }}"
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: cachix/install-nix-action@v31
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Cache Mill
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/mill
+          ~/.cache/coursier
+          out/
+        key: ${{ runner.os }}-mill-jdk${{ matrix.jdk }}-${{ matrix.scala-version }}-${{ hashFiles('build.mill') }}
+        restore-keys: |
+          ${{ runner.os }}-mill-jdk${{ matrix.jdk }}-${{ matrix.scala-version }}-
+          ${{ runner.os }}-mill-
+
+    - name: Report toolchain
+      run: |
+        nix develop --command bash -c 'java -version; echo "JAVA_HOME=$JAVA_HOME"'
+        echo "Mill will resolve and run tests on: $MYLIBRARY_JVM"
+
+    - name: Run tests
+      run: |
+        nix develop --command mill "__[${{ matrix.scala-version }}].test"
 
   site:
     name: Generate Site
@@ -85,7 +134,7 @@ jobs:
     # Generate site
     - name: Generate site
       run: |
-        nix develop --command mill --no-server docs.build
+        nix develop --command mill --no-daemon docs.build
 
     # Publish site
     - name: Publish site

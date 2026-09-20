@@ -47,7 +47,16 @@ read -rp "Maven organization (e.g. com.softinio): " ORGANIZATION
 read -rp "GitHub org/user (e.g. softinio): " GITHUB_ORG
 read -rp "Developer name (e.g. Jane Doe): " DEV_NAME
 read -rp "Developer URL (e.g. https://softinio.com): " DEV_URL
+# Optional. Maven Central does not require it -- Mill emits a
+# <developer><email> element either way, and a blank one publishes fine. Skip it
+# if you would rather not have an address permanently on Central, since a
+# published POM cannot be amended or withdrawn.
+read -rp "Developer email (optional, press Enter to skip): " DEV_EMAIL
 read -rp "Short library description (e.g. A fast Scala library for X): " DESCRIPTION
+echo ""
+echo "License: any SPDX identifier Mill knows, e.g. Apache-2.0, MIT, BSD-3-Clause, MPL-2.0."
+read -rp "SPDX license identifier [Apache-2.0]: " LICENSE_ID
+LICENSE_ID="${LICENSE_ID:-Apache-2.0}"
 
 require "Library name" "$LIBRARY_NAME"
 require "Maven organization" "$ORGANIZATION"
@@ -55,6 +64,11 @@ require "GitHub org/user" "$GITHUB_ORG"
 require "Developer name" "$DEV_NAME"
 require "Developer URL" "$DEV_URL"
 require "Short library description" "$DESCRIPTION"
+
+if ! printf '%s' "$LICENSE_ID" | grep -Eq '^[A-Za-z0-9.+-]+$'; then
+  echo "Error: license must be a bare SPDX identifier (e.g. MIT), not a name or URL." >&2
+  exit 1
+fi
 
 if ! printf '%s' "$LIBRARY_NAME" | grep -Eq '^[a-z][a-z0-9]*(-[a-z0-9]+)*$'; then
   echo "Error: library name must be lower-case alphanumeric words separated by '-' (e.g. cool-lib)." >&2
@@ -87,7 +101,9 @@ R_MODULE="$(esc "$MODULE_IDENT")"
 R_GITHUB="$(esc "$GITHUB_ORG")"
 R_DEV_NAME="$(esc "$DEV_NAME")"
 R_DEV_URL="$(esc "$DEV_URL")"
+R_DEV_EMAIL="$(esc "$DEV_EMAIL")"
 R_DESCRIPTION="$(esc "$DESCRIPTION")"
+R_LICENSE="$(esc "$LICENSE_ID")"
 
 # Every tracked text file that still mentions a placeholder. Discovered rather
 # than hard-coded so the list cannot drift out of sync with the template.
@@ -100,7 +116,8 @@ done < <(
     -type f ! -name 'setup.sh' ! -path './.claude/commands/setup.md' -print |
     sed 's|^\./||' |
     xargs grep -Il -e 'mylibrary' -e 'MyLibrary' -e 'MYLIBRARY' -e 'com\.example' \
-      -e 'myorg' -e 'My Name' -e 'example\.com' -e 'A Scala 3 library' |
+      -e 'myorg' -e 'My Name' -e 'example\.com' -e 'A Scala 3 library' \
+      -e 'License\.`Apache-2\.0`' |
     sort
 )
 
@@ -112,12 +129,15 @@ for f in "${FILES[@]}"; do
     -e "s|object mylibrary |object ${R_MODULE} |g" \
     -e "s|Seq(mylibrary(|Seq(${R_MODULE}(|g" \
     -e "s|MYLIBRARY_DOC_VERSION|${R_UPPER}_DOC_VERSION|g" \
+    -e "s|MYLIBRARY_JVM|${R_UPPER}_JVM|g" \
     -e "s|mylibrary|${R_LIB}|g" \
     -e "s|MyLibrary|${R_PASCAL}|g" \
     -e "s|myorg|${R_GITHUB}|g" \
     -e "s|My Name|${R_DEV_NAME}|g" \
+    -e "s|dev@example\\.com|${R_DEV_EMAIL}|g" \
     -e "s|https://example\\.com|${R_DEV_URL}|g" \
     -e "s|A Scala 3 library|${R_DESCRIPTION}|g" \
+    -e "s|License\\.\`Apache-2\\.0\`|License.\`${R_LICENSE}\`|g" \
     "$f"
   rm -f "${f}.bak"
   echo "  updated: $f"
@@ -157,19 +177,34 @@ echo "  Library name:    ${LIBRARY_NAME}"
 echo "  Scala package:   ${ORGANIZATION}.${PKG_NAME}"
 echo "  Scala types:     ${PASCAL_NAME}"
 echo "  Docs version env: ${UPPER_NAME}_DOC_VERSION"
+echo "  Test JDK env:     ${UPPER_NAME}_JVM"
 echo "  Organization:    ${ORGANIZATION}"
 echo "  GitHub org/user: ${GITHUB_ORG}"
 echo "  Developer:       ${DEV_NAME} (${DEV_URL})"
+echo "  Developer email: ${DEV_EMAIL:-(none)}"
 echo "  Description:     ${DESCRIPTION}"
+echo "  License:         ${LICENSE_ID}"
 echo ""
+if [[ "$LICENSE_ID" != "Apache-2.0" ]]; then
+  echo "!! The bundled LICENSE file is still the Apache License 2.0 text, but"
+  echo "!! build.mill now declares ${LICENSE_ID}. Replace LICENSE with the"
+  echo "!! ${LICENSE_ID} text before publishing:"
+  echo "!!   https://spdx.org/licenses/${LICENSE_ID}.html"
+  echo ""
+fi
+
 echo "Next steps:"
 echo "  1. Review build.mill and add your library's mvnDeps"
 echo "  2. Set up Maven Central publishing secrets in your GitHub repo:"
 echo "     MILL_PGP_PASSPHRASE, MILL_PGP_SECRET_BASE64,"
 echo "     MILL_SONATYPE_PASSWORD, MILL_SONATYPE_USERNAME"
 echo "  3. Enter the dev shell: nix develop"
-echo "  4. Run tests: mill __.test"
-echo "  5. Delete this script: rm setup.sh"
+echo "  4. Commit the flake.lock it writes, so CI pins the toolchain:"
+echo "       git add flake.lock && git commit -m 'Pin nixpkgs'"
+echo "     Without it, nixos-unstable is re-resolved on every CI run and the"
+echo "     JDK, Mill and Node versions can drift between runs."
+echo "  5. Run tests: mill __.test"
+echo "  6. Delete this script: rm setup.sh"
 echo ""
 
 read -rp "Delete setup.sh and .claude/commands/setup.md now? [y/N]: " DELETE_SELF
