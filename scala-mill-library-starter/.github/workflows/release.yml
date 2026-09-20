@@ -38,7 +38,16 @@ jobs:
         MILL_PGP_SECRET_BASE64: ${{ secrets.MILL_PGP_SECRET_BASE64 }}
         MILL_SONATYPE_PASSWORD: ${{ secrets.MILL_SONATYPE_PASSWORD }}
         MILL_SONATYPE_USERNAME: ${{ secrets.MILL_SONATYPE_USERNAME }}
-      run: nix develop --command mill mill.scalalib.SonatypeCentralPublishModule/
+      # Publish from the 3.3 LTS only. Every Scala 3.x is binary compatible, so
+      # all cross-versions share the `_3` coordinate -- publishing them all races
+      # them to the same address and the winner varies between releases. TASTy is
+      # only backward compatible too: artifacts built by the newer compiler
+      # cannot be read by a 3.3 one, while LTS-built artifacts are readable by
+      # both. The newer cross-version in CI is compile verification, not a
+      # publish target.
+      run: |
+        nix develop --command mill mill.scalalib.SonatypeCentralPublishModule/ \
+          --publishArtifacts "__[3.3.8].publishArtifacts"
 
     # Create GitHub Release
     - name: Create GitHub Release

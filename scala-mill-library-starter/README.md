@@ -2,7 +2,7 @@
 
 A Nix flake template for bootstrapping Scala library projects using the [Mill](https://mill-build.org) build tool. Includes:
 
-- Cross-Scala 3 build (3.3.8 LTS + 3.8.4 latest)
+- Cross-Scala 3 build (3.3.8 LTS + 3.9.0 latest)
 - Dual-module structure: core library (cats) + cats-effect/FS2 integration
 - Git-tag-based automatic versioning via [mill-git](https://github.com/jodersky/mill-git)
 - Maven Central publishing via Sonatype
@@ -42,7 +42,8 @@ Both methods will prompt you for your library name, Maven organization, GitHub h
 ## Prerequisites
 
 - [Nix](https://nixos.org/download) with flakes enabled
-- JDK 25 (provided by the devshell); published artifacts target Java 25 bytecode
+- JDK 25 (provided by the devshell); published artifacts target Java 21 bytecode,
+  which is the highest `-release` the 3.3 LTS compiler accepts
 
 ## Development
 
@@ -58,11 +59,12 @@ nix develop
 |---|---|
 | `mill __.compile` | Compile all modules |
 | `mill __.test` | Run all tests |
-| `mill "mylibrary[3.8.4].test"` | Test core module with Scala 3.8.4 |
+| `mill "__[3.9.0].test"` | Test every module with Scala 3.9.0 |
+| `mill "mylibrary[3.3.8].test"` | Test one module with one Scala version |
 | `mill "mylibrary-cats-effect[3.3.8].test"` | Test cats-effect module with Scala 3.3.8 |
 | `fmt` | Format all sources with Scalafmt |
 | `fmtCheck` | Check formatting without modifying |
-| `mill "mylibrary[3.8.4].docJar"` | Generate Scaladoc |
+| `mill "__[3.9.0].docJar"` | Generate Scaladoc for every module |
 | `mill docs.build` (or `buildDocs`) | Build the Laika documentation site |
 | `mill docs.preview` (or `previewDocs`) | Serve the docs at http://localhost:4242 |
 | `mill __.publishLocal` | Publish to local Ivy repository |
@@ -98,10 +100,21 @@ nix develop
 
 The template uses two Mill cross modules:
 
-- **`mylibrary`** — core library (depends on cats-core), cross-built for Scala 3.3.8 and 3.8.4
+- **`mylibrary`** — core library (depends on cats-core), cross-built for Scala 3.3.8 and 3.9.0
 - **`mylibrary-cats-effect`** — cats-effect + FS2 integration, depends on the core module
 
 Both modules extend `GitVersionedPublishModule`, so the version is automatically derived from git tags (e.g. tagging `v0.1.0` publishes version `0.1.0`).
+
+### Why releases publish from the LTS only
+
+All Scala 3.x releases are binary compatible, so `artifactScalaVersion` collapses
+them to a single `_3` coordinate. That means publishing every cross-version races
+them to the same address, and which one lands varies between releases. TASTy is
+only backward compatible on top of that: artifacts built by 3.9.0 cannot be read
+by a 3.3 compiler, while 3.3.8-built ones are readable by both. So the release
+workflow pins publishing to `__[3.3.8]`, and the newer cross-version in CI serves
+as compile verification rather than a publish target. This matches what cats, fs2,
+http4s and circe all do.
 
 ## Documentation Site
 
