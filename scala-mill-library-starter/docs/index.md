@@ -10,14 +10,14 @@ MyLibrary is published to Maven Central for Scala 3. Add it to your build:
 
 ```scala
 def mvnDeps = Seq(
-  mvn"com.example::mylibrary:<version>"
+  mvn"com.example::mylibrary:@VERSION@"
 )
 ```
 
 ### sbt
 
 ```scala
-libraryDependencies += "com.example" %% "mylibrary" % "<version>"
+libraryDependencies += "com.example" %% "mylibrary" % "@VERSION@"
 ```
 
 For the cats-effect integration module, also add `mylibrary-cats-effect`.
@@ -46,3 +46,7 @@ additional `.md` files next to this one.
 
 - `mill docs.build` — build the site into `site/target/docs/site`
 - `mill docs.preview` — build and serve the site at `http://localhost:4242`
+
+Write a release version as `@VERSION@`, as the installation snippets above do.
+The build replaces it with the version being documented: the release tag when
+the site is published, the git-derived version locally.

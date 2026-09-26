@@ -26,8 +26,9 @@ later, broader ones.
 | `com.example` | `<organization>` |
 | `mylibrary-cats-effect` | `<library-name>-cats-effect` |
 | `object mylibrary ` | `object <module-ident> ` |
-| `Seq(mylibrary(` | `Seq(<module-ident>(` |
+| `mylibrary(` | `<module-ident>(` |
 | `MYLIBRARY_DOC_VERSION` | `<UPPER_NAME>_DOC_VERSION` |
+| `MYLIBRARY_JVM` | `<UPPER_NAME>_JVM` |
 | `mylibrary` | `<library-name>` |
 | `MyLibrary` | `<PascalName>` |
 | `myorg` | `<github-org>` |
@@ -47,8 +48,9 @@ separated by `-` (e.g. `cool-lib`):
   not legal in an environment variable name.
 - `<module-ident>` — the library name, backtick-quoted if it contains a `-`
   (`` `cool-lib` ``), since Mill object names are Scala identifiers. Used only
-  for the `object` definition and the `moduleDeps` reference in `build.mill`;
-  artifact names, directories and docs keep the plain hyphenated form.
+  for the `object` definition and the references to that module in
+  `build.mill` (`moduleDeps`, `docs.gitVersion`); artifact names, directories
+  and docs keep the plain hyphenated form.
 
 ## Files to Update
 

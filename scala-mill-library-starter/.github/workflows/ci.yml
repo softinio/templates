@@ -55,9 +55,12 @@ jobs:
       run: |
         nix develop --command mill "__[3.9.0].docJar"
 
-    # Upload test results
+    # Only on failure: the reports are for diagnosing a red run. Uploading them
+    # from every green one fills the account's artifact storage quota (private
+    # repos share it), and once it is full the upload fails the job even when
+    # every test has passed.
     - name: Upload test results
-      if: always()
+      if: failure()
       uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ matrix.scala-version }}
@@ -131,16 +134,8 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-mill-docs-
 
-    # Generate site
+    # This only proves the site builds. It is published from a release tag by
+    # docs.yml, so the live docs never describe unreleased changes.
     - name: Generate site
       run: |
         nix develop --command mill --no-daemon docs.build
-
-    # Publish site
-    - name: Publish site
-      if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-      uses: peaceiris/actions-gh-pages@v4.0.0
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: site/target/docs/site
-        keep_files: true
