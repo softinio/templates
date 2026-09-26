@@ -127,7 +127,7 @@ for f in "${FILES[@]}"; do
     -e "s|com\\.example|${R_ORG}|g" \
     -e "s|mylibrary-cats-effect|${R_CATS}|g" \
     -e "s|object mylibrary |object ${R_MODULE} |g" \
-    -e "s|Seq(mylibrary(|Seq(${R_MODULE}(|g" \
+    -e "s|mylibrary(|${R_MODULE}(|g" \
     -e "s|MYLIBRARY_DOC_VERSION|${R_UPPER}_DOC_VERSION|g" \
     -e "s|MYLIBRARY_JVM|${R_UPPER}_JVM|g" \
     -e "s|mylibrary|${R_LIB}|g" \
@@ -198,6 +198,8 @@ echo "  1. Review build.mill and add your library's mvnDeps"
 echo "  2. Set up Maven Central publishing secrets in your GitHub repo:"
 echo "     MILL_PGP_PASSPHRASE, MILL_PGP_SECRET_BASE64,"
 echo "     MILL_SONATYPE_PASSWORD, MILL_SONATYPE_USERNAME"
+echo "     The Sonatype pair is a generated user token, not your login"
+echo "     (see README.md, 'Required GitHub Secrets')."
 echo "  3. Enter the dev shell: nix develop"
 echo "  4. Commit the flake.lock it writes, so CI pins the toolchain:"
 echo "       git add flake.lock && git commit -m 'Pin nixpkgs'"

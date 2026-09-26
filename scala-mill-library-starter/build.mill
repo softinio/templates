@@ -200,43 +200,52 @@ trait MyLibraryCatsEffectModule
   * scripts in `scripts/`.
   *
   *   - `mill docs.build` — build the site into `site/target/docs/site`
-  *   - `mill docs.preview` — build and serve the site at
+  *   - `mill docs.preview` — build, then serve that output at
   *     http://localhost:4242
+  *
+  * Preview serves what `build` produced rather than re-rendering, so the two
+  * cannot drift. Note it holds Mill's workspace lock for as long as it serves,
+  * so nothing else can build meanwhile.
   */
 object docs extends Module:
+
+  /** The git-derived version, shown when `MYLIBRARY_DOC_VERSION` is unset. */
+  def gitVersion: T[String] = Task { mylibrary("3.3.8").publishVersion() }
+
+  /** The version the pages show in place of `@VERSION@`: the release tag in the
+    * docs workflow, which sets `MYLIBRARY_DOC_VERSION`, otherwise the git-derived
+    * one. The variable is read here, in the command, because a cached task
+    * does not re-run when only an environment variable changes.
+    */
   def build() = Task.Command {
-    val projectRoot = mill.api.BuildCtx.workspaceRoot
-    val outputDir   = "site/target/docs/site"
-
-    println("Building documentation site...")
-    println(s"  Input:  ${projectRoot / "docs"}")
-    println(s"  Output: ${projectRoot / os.RelPath(outputDir)}")
-
-    val scriptPath = projectRoot / "scripts" / "LaikaBuild.scala"
-
-    mill.api.BuildCtx.withFilesystemCheckerDisabled {
-      os.proc("scala-cli", "run", scriptPath.toString)
-        .call(cwd = projectRoot, stdout = os.Inherit, stderr = os.Inherit)
-    }
-
-    println(s"Site built at: $outputDir")
-    PathRef(projectRoot / os.RelPath(outputDir))
+    val fallback = gitVersion()
+    renderSite(Task.env.getOrElse("MYLIBRARY_DOC_VERSION", fallback))
   }
 
   def preview() = Task.Command {
     val projectRoot = mill.api.BuildCtx.workspaceRoot
-    val port        = 4242
-
-    println("Starting preview server...")
-    println(s"  Input: ${projectRoot / "docs"}")
-    println(s"  URL:   http://localhost:$port")
-    println("  Press Ctrl+C to stop")
-
-    val scriptPath = projectRoot / "scripts" / "LaikaPreview.scala"
-
+    val fallback    = gitVersion()
+    renderSite(Task.env.getOrElse("MYLIBRARY_DOC_VERSION", fallback))
     mill.api.BuildCtx.withFilesystemCheckerDisabled {
-      os.proc("scala-cli", "run", scriptPath.toString)
+      os.proc("scala-cli", "run", (projectRoot / "scripts" / "LaikaPreview.scala").toString)
         .call(cwd = projectRoot, stdout = os.Inherit, stderr = os.Inherit)
     }
     ()
   }
+
+  private def renderSite(version: String): PathRef =
+    val projectRoot = mill.api.BuildCtx.workspaceRoot
+    val siteDir     = projectRoot / "site" / "target" / "docs" / "site"
+
+    println(s"Building documentation site for $version...")
+    mill.api.BuildCtx.withFilesystemCheckerDisabled {
+      os.proc("scala-cli", "run", (projectRoot / "scripts" / "LaikaBuild.scala").toString)
+        .call(
+          cwd = projectRoot,
+          env = Map("MYLIBRARY_DOC_VERSION" -> version),
+          stdout = os.Inherit,
+          stderr = os.Inherit
+        )
+    }
+    println(s"Site built at: $siteDir")
+    PathRef(siteDir)
