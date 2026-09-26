@@ -58,7 +58,7 @@ trait MyLibraryModule
     else common :+ "-Xkind-projector:underscores"
 
   def scalaDocOptions = Task {
-    val version = Task.env.get("MYLIBRARY_DOC_VERSION").getOrElse(publishVersion())
+    val version = docs.versionOverride().getOrElse(publishVersion())
     super.scalaDocOptions() ++ Seq(
       "-project",
       "MyLibrary",
@@ -149,7 +149,7 @@ trait MyLibraryCatsEffectModule
     else common :+ "-Xkind-projector:underscores"
 
   def scalaDocOptions = Task {
-    val version = Task.env.get("MYLIBRARY_DOC_VERSION").getOrElse(publishVersion())
+    val version = docs.versionOverride().getOrElse(publishVersion())
     super.scalaDocOptions() ++ Seq(
       "-project",
       "MyLibrary Cats Effect",
@@ -209,23 +209,30 @@ trait MyLibraryCatsEffectModule
   */
 object docs extends Module:
 
-  /** The git-derived version, shown when `MYLIBRARY_DOC_VERSION` is unset. */
-  def gitVersion: T[String] = Task { mylibrary("3.3.8").publishVersion() }
-
-  /** The version the pages show in place of `@VERSION@`: the release tag in the
-    * docs workflow, which sets `MYLIBRARY_DOC_VERSION`, otherwise the git-derived
-    * one. The variable is read here, in the command, because a cached task
-    * does not re-run when only an environment variable changes.
+  /** `MYLIBRARY_DOC_VERSION`, which the docs workflow sets from the release tag.
+    * An input, like `jvmVersion`, so it is re-read on every run: a plain task
+    * that reads `Task.env` is cached, and silently keeps the version from the
+    * last build when only the variable changes. The Scaladoc options read it
+    * too.
     */
+  def versionOverride: T[Option[String]] = Task.Input {
+    Task.env.get("MYLIBRARY_DOC_VERSION")
+  }
+
+  /** The version the pages show in place of `@VERSION@`: the override if set,
+    * otherwise the git-derived version.
+    */
+  def siteVersion: T[String] = Task {
+    versionOverride().getOrElse(mylibrary("3.3.8").publishVersion())
+  }
+
   def build() = Task.Command {
-    val fallback = gitVersion()
-    renderSite(Task.env.getOrElse("MYLIBRARY_DOC_VERSION", fallback))
+    renderSite(siteVersion())
   }
 
   def preview() = Task.Command {
     val projectRoot = mill.api.BuildCtx.workspaceRoot
-    val fallback    = gitVersion()
-    renderSite(Task.env.getOrElse("MYLIBRARY_DOC_VERSION", fallback))
+    renderSite(siteVersion())
     mill.api.BuildCtx.withFilesystemCheckerDisabled {
       os.proc("scala-cli", "run", (projectRoot / "scripts" / "LaikaPreview.scala").toString)
         .call(cwd = projectRoot, stdout = os.Inherit, stderr = os.Inherit)
