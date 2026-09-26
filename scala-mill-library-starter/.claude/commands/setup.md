@@ -49,7 +49,7 @@ separated by `-` (e.g. `cool-lib`):
 - `<module-ident>` — the library name, backtick-quoted if it contains a `-`
   (`` `cool-lib` ``), since Mill object names are Scala identifiers. Used only
   for the `object` definition and the references to that module in
-  `build.mill` (`moduleDeps`, `docs.gitVersion`); artifact names, directories
+  `build.mill` (`moduleDeps`, `docs.siteVersion`); artifact names, directories
   and docs keep the plain hyphenated form.
 
 ## Files to Update
