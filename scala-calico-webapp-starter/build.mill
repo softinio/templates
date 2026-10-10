@@ -73,8 +73,10 @@ object shared extends Module {
     )
 
     trait SharedTests extends AppTests {
-      // one shared test source tree, compiled for both platforms
-      def sources = Task.Sources(moduleDir / os.up / os.up / "test" / "src")
+      // one shared test source tree, compiled for both platforms.
+      // PlatformScalaModule already strips the jvm/js segment, so moduleDir
+      // is shared/test here.
+      def sources = Task.Sources(moduleDir / "src")
     }
   }
 
