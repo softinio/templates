@@ -47,7 +47,6 @@ if ! printf '%s' "$ORGANIZATION" | grep -Eq '^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)*$
 fi
 
 ENV_PREFIX=$(printf '%s' "$APP_NAME" | tr '[:lower:]' '[:upper:]')
-ORG_PATH=$(printf '%s' "$ORGANIZATION" | tr '.' '/')
 
 R_PKG=$(esc "${ORGANIZATION}.${APP_NAME}")
 R_ENV_PREFIX=$(esc "$ENV_PREFIX")
@@ -80,18 +79,6 @@ find . \
     rm -f "$f.bak"
     echo "  updated: $f"
   done
-
-# --- move sources into the new package directory ---------------------------
-
-for module in shared/src shared/test/src backend/src backend/test/src frontend/src; do
-  if [[ -d "$module/com/example/mywebapp" ]]; then
-    mkdir -p "$module/${ORG_PATH}"
-    mv "$module/com/example/mywebapp" "$module/${ORG_PATH}/${APP_NAME}"
-    # remove the old empty com/example tree if nothing is left in it
-    rmdir -p "$module/com/example" 2>/dev/null || true
-    echo "  moved:   $module/com/example/mywebapp -> $module/${ORG_PATH}/${APP_NAME}"
-  fi
-done
 
 echo ""
 echo "=== Setup complete! ==="

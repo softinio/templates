@@ -35,6 +35,7 @@ the shared rules, POSTs JSON, and stores rows via skunk.
 ```bash
 mkdir mywebapp && cd mywebapp
 nix flake init --template github:softinio/templates#scala-calico-webapp-starter
+chmod +x mill setup.sh   # nix flake init drops executable bits
 ./setup.sh    # interactive rename of all placeholders
 nix develop
 runDev        # starts PostgreSQL, creates the db, boots the server
@@ -66,13 +67,18 @@ All runtime configuration is environment variables prefixed `MYWEBAPP_`
 (renamed by `setup.sh`): `_HTTP_HOST`, `_HTTP_PORT`, `_BASE_URL`,
 `_DB_HOST`, `_DB_PORT`, `_DB_USER`, `_DB_PASSWORD`, `_DB_NAME`,
 `_DB_SOCKET_DIR` (unix socket, used by the NixOS module), `_DEV_ASSETS`.
-See `backend/src/.../Config.scala`.
+See `backend/src/Config.scala`.
 
 ## Adding to the app
 
+- **Source layout**: Mill's
+  [basic layout](https://mill-build.org/mill/scalalib/intro.html#_basic_folder_layout).
+  Sources sit directly in `<module>/src/`, with one folder per sub-package
+  (`db/`, `html/`, `routes/`, ...) instead of the full `com/example/...`
+  directory nesting.
 - **New page**: add a method to `html/Pages.scala` and a route in
   `routes/Routes.scala`.
-- **New island**: add a component in `frontend/src/.../ui/`, a case in the
+- **New island**: add a component in `frontend/src/ui/`, a case in the
   `Main.mount` match, and emit `data-island` / `data-props` from a page.
   Props round-trip through a shared circe codec.
 - **New migration**: add `backend/resources/db/migration/V2__*.sql` AND
