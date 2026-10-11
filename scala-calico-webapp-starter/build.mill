@@ -1,7 +1,10 @@
-//| mill-version: 1.1.7
+//| mill-version: 1.1.10
 //| mill-jvm-version: system
+//| mill-jvm-opts:
+//| - --sun-misc-unsafe-memory-access=allow
+//| - --enable-native-access=ALL-UNNAMED
 //| mvnDeps:
-//| - com.goyeau::mill-scalafix::0.6.1
+//| - com.goyeau::mill-scalafix::0.6.2
 package build
 
 import com.goyeau.mill.scalafix.ScalafixModule
@@ -13,23 +16,23 @@ import mill.scalalib.*
 import mill.scalalib.scalafmt.ScalafmtModule
 
 object versions {
-  val scala = "3.8.4"
+  val scala = "3.9.0"
   val scalaJS = "1.22.0"
 
   val cats = "2.13.0"
-  val catsEffect = "3.7.0"
-  val fs2 = "3.13.0"
-  val http4s = "1.0.0-M47"
+  val catsEffect = "3.7.1"
+  val fs2 = "3.14.0"
+  val http4s = "1.0.0-M49"
   val calico = "0.2.3"
-  val circe = "0.14.16"
+  val circe = "0.14.17"
   val skunk = "1.0.0"
-  val dumbo = "0.10.1"
-  val ciris = "3.15.0"
+  val dumbo = "0.11.0"
+  val ciris = "3.15.2"
   val scalatags = "0.13.1"
   val log4cats = "2.8.0"
-  val logback = "1.5.18"
-  val munit = "1.3.3"
-  val munitCatsEffect = "2.2.0"
+  val logback = "1.6.5"
+  val munit = "1.3.6"
+  val munitCatsEffect = "2.2.1"
 }
 
 /** Settings shared by every module: Scala version, warnings (fatal in CI),
@@ -51,8 +54,14 @@ trait AppModule extends ScalaModule, ScalafmtModule, ScalafixModule {
     ) ++ (if (insideCi()) Seq("-Werror") else Seq())
   }
 
+  // libraries compiled before Scala 3.8 implement lazy vals with
+  // sun.misc.Unsafe, which JDK 25 warns about unless allowed; the packaged
+  // jar's wrapper (flake.nix) passes the same flag
+  def forkArgs = Seq("--sun-misc-unsafe-memory-access=allow")
+
   trait AppTests extends ScalaTests, TestModule.Munit {
     def mvnDeps = Seq(mvn"org.scalameta::munit::${versions.munit}")
+    def forkArgs = AppModule.this.forkArgs()
   }
 }
 
