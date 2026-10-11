@@ -16,7 +16,7 @@ A Nix flake template for full-stack Scala 3 web applications on the
   [dumbo](https://github.com/rolang/dumbo) (Flyway-style) migrations that
   run at startup
 - **Tailwind CSS v4** compiled into the server's resources by the build
-- **[Mill](https://mill-build.org) 1.1.7** build with scalafmt, scalafix,
+- **[Mill](https://mill-build.org) 1.1.10** build with scalafmt, scalafix,
   and a self-contained assembly jar (JS bundle, CSS, fonts, migrations all
   inside)
 - **Nix devshell** ([numtide devshell](https://github.com/numtide/devshell))
@@ -57,7 +57,7 @@ Type `menu` inside `nix develop`:
 | `watchFrontend` | Relink the Scala.js bundle on change (pair with `MYWEBAPP_DEV_ASSETS=out/frontend/fastLinkJS.dest`) |
 | `startPostgres` / `stopPostgres` / `postgresStatus` / `resetDB` | Database lifecycle |
 
-Without Nix: install a JDK (21+), PostgreSQL, and Node, run `npm install`
+Without Nix: install a JDK (25+), PostgreSQL, and Node, run `npm install`
 (provides the Tailwind CLI), and use `./mill` directly — the committed
 launcher downloads Mill itself.
 

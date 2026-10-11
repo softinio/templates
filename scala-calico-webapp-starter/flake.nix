@@ -21,11 +21,11 @@
           # needs a nix store path so it is set here
           devShells.default = pkgs.devshell.mkShell {
             imports = [ (pkgs.devshell.importTOML ./devshell.toml) ];
-            packages = [ pkgs.jdk21 ];
+            packages = [ pkgs.jdk25 ];
             env = [
               {
                 name = "JAVA_HOME";
-                value = "${pkgs.jdk21}";
+                value = "${pkgs.jdk25}";
               }
             ];
           };
@@ -48,7 +48,7 @@
               nativeBuildInputs = with pkgs; [
                 mill
                 millDeps.setupHook
-                jdk21
+                jdk25
                 tailwindcss_4
                 makeWrapper
               ];
@@ -66,8 +66,8 @@
                 mkdir -p $out/share/java $out/bin
                 cp out/backend/assembly.dest/out.jar \
                   $out/share/java/mywebapp.jar
-                makeWrapper ${pkgs.jdk21}/bin/java $out/bin/mywebapp \
-                  --add-flags "-jar $out/share/java/mywebapp.jar"
+                makeWrapper ${pkgs.jdk25}/bin/java $out/bin/mywebapp \
+                  --add-flags "--sun-misc-unsafe-memory-access=allow -jar $out/share/java/mywebapp.jar"
                 runHook postInstall
               '';
             };
